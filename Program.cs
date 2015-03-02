@@ -6,42 +6,28 @@ namespace KeepRDPAlive
 {
     static class Program
     {
-        [DllImport("USER32.DLL", CharSet = CharSet.Unicode)]
-        static extern IntPtr FindWindow(string lpClassName,
-            string lpWindowName);
 
-        [DllImport("USER32.DLL")]
-        static extern bool SetForegroundWindow(IntPtr hWnd);
-
-        [DllImport("USER32.DLL")]
-        static extern IntPtr GetForegroundWindow();
-
-        [DllImport("user32.dll")]
-        static extern void mouse_event(int dwFlags, int dx, int dy, int dwData, int dwExtraInfo);
-
-        private const int MOUSEEVENTF_MOVE = 0x0001;
-
-        private static void ShakeMouse(IntPtr hwnd)
-        {
-            mouse_event(MOUSEEVENTF_MOVE, 1, 1, 0, 0);
-            Thread.Sleep(1);
-            mouse_event(MOUSEEVENTF_MOVE, -1, -1, 0, 0);
-        }
 
         private static bool RefreshRDPWindow(string remoteHost)
         {
-            var window = FindWindow("TscShellContainerClass", string.Format("{0} - Remote Desktop Connection", remoteHost));
+            var window = WindowHelper.FindTerminalServicesWindowByHost(remoteHost);
+            if (window == IntPtr.Zero) return false;
 
-            if (window.ToInt32() == 0) return false;
+            bool isMinimized = WindowHelper.IsIconic(window);
 
-            var foreWindow = GetForegroundWindow();
-
-            if (window != foreWindow) SetForegroundWindow(window);
-
-            ShakeMouse(window);
-
-            if (window != foreWindow) SetForegroundWindow(foreWindow);
             
+
+            var fwwindow = WindowHelper.GetForegroundWindow();
+
+            if (fwwindow != window) WindowHelper.SetForegroundWindow(window);
+            if (isMinimized) SendMessageHelper.RestoreWindow(window);
+
+            KeyboardHelper.SendNoise();
+
+            if (isMinimized) SendMessageHelper.MinimizeWindow(window);
+
+            if (fwwindow != window) WindowHelper.SetForegroundWindow(fwwindow);
+
             return true;
         }
 
