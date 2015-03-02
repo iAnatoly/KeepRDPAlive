@@ -15,8 +15,6 @@ namespace KeepRDPAlive
 
             bool isMinimized = WindowHelper.IsIconic(window);
 
-            
-
             var fwwindow = WindowHelper.GetForegroundWindow();
 
             if (fwwindow != window) WindowHelper.SetForegroundWindow(window);
@@ -42,9 +40,9 @@ namespace KeepRDPAlive
             {
                 foreach (var hostname in args)
                 {
-                    Console.Write("{0}: Shaking {1}...", DateTime.Now, hostname);
+                    Console.Write("{0}: Poking {1}...", DateTime.Now, hostname);
                     
-                    Console.WriteLine( RefreshRDPWindow(hostname) ? "Success." : "Windows not found." );
+                    Console.WriteLine( RefreshRDPWindow(hostname) ? "Success." : "Window not found." );
 
                     Thread.Sleep(1000);
                 }
